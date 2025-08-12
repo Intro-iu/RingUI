@@ -1,3 +1,7 @@
+/**
+ * @file ui.hpp
+ * @brief Defines the main UI controller, RingController.
+ */
 #pragma once
 
 #include <Arduino.h>
@@ -14,18 +18,30 @@
 #else
     template <typename Driver>
 #endif
+
+/**
+ * @class RingController
+ * @brief Manages the entire UI, including menus and pages.
+ */
 class RingController {
 public:
     Driver& OLED;
     RingController(Driver& oled) : OLED(oled) {}
 
+    /**
+     * @brief Initializes the OLED display.
+     */
     void setup() {
         OLED.begin();
         OLED.enableUTF8Print();
         OLED.setFont(DEFAULT_TEXT_FONT);
-        OLED.setFontMode(1);
+        OLED.setFontMode(1); // Transparent font mode
     }
     
+    /**
+     * @brief The main entry point and loop for the UI.
+     * @param startMenu The root menu to display.
+     */
     void handle(Menu* startMenu) {
         if (!startMenu) return;
 
@@ -36,22 +52,27 @@ public:
             Menu* currentMenu = menuStack.back();
             int selectedIndex = showMenu(currentMenu);
 
-            if (selectedIndex >= 0) {
+            if (selectedIndex >= 0) { // An item was selected
                 MenuItem& selectedItem = currentMenu->getItem(selectedIndex);
                 if (selectedItem.type == MenuItem::ItemType::DIRECTORY && selectedItem.subMenu) {
+                    // Animate to the submenu
                     selectedItem.subMenu->selected = 0;
                     animateTransition(currentMenu, selectedItem.subMenu, ANIM_FORWARD);
                     menuStack.push_back(selectedItem.subMenu);
                 } else if (selectedItem.type == MenuItem::ItemType::OPTION && selectedItem.action) {
-                    animateTransition(currentMenu, nullptr, ANIM_FORWARD);
-                    selectedItem.action();
-                    animateTransition(nullptr, currentMenu, ANIM_BACKWARD);
+                    // Create the page and handle its lifecycle
+                    Page* page = selectedItem.action();
+                    if (page) {
+                        handlePage(page, currentMenu);
+                        delete page; // Clean up the page object after it's done
+                    }
                 }
-            } else { // Cancelled
+            } else { // Cancelled from a menu
                 Menu* parentMenu = nullptr;
                 if (menuStack.size() > 1) {
                     parentMenu = menuStack[menuStack.size() - 2];
                 }
+                // Animate back to the parent menu
                 animateTransition(currentMenu, parentMenu, ANIM_BACKWARD);
                 menuStack.pop_back();
             }
@@ -67,6 +88,71 @@ private:
         ANIM_FORWARD,
         ANIM_BACKWARD
     };
+
+    /**
+     * @brief Manages the lifecycle of a page, including animations and interaction.
+     * @param page A pointer to the page to handle.
+     * @param under_menu The menu that is displayed underneath the page during animations.
+     */
+    void handlePage(Page* page, Menu* under_menu) {
+        double current_y, target_y;
+        double velocity_y = 0.0, integral_y = 0.0, last_error_y = 0.0;
+        int menu_y_offset = calculate_scroll_offset(under_menu);
+
+        // --- Page Entry Animation ---
+        current_y = -SCREEN_HEIGHT;
+        target_y = 0;
+        while (abs(target_y - current_y) > 0.1 || abs(velocity_y) > 0.1) {
+            double error_y = target_y - current_y;
+            integral_y += error_y;
+            if (integral_y > 20) integral_y = 20; if (integral_y < -20) integral_y = -20;
+            double derivative_y = error_y - last_error_y;
+            velocity_y = g_config.anim_pid_kp * error_y + g_config.anim_pid_ki * integral_y + g_config.anim_pid_kd * derivative_y;
+            current_y += velocity_y;
+            last_error_y = error_y;
+
+            OLED.clearBuffer();
+            OLED.setDrawColor(1);
+            drawMenu(under_menu, 0, menu_y_offset); // Draw menu underneath
+            page->draw(round(current_y)); // Draw page content sliding in
+            OLED.sendBuffer();
+            delay(ANIMATION_DELAY);
+        }
+
+        // --- Page Main Loop ---
+        while (true) {
+            if (page->handleInput()) {
+                break; // Page is finished, exit loop
+            }
+
+            OLED.clearBuffer();
+            OLED.setDrawColor(1);
+            page->draw(0); // Draw page content normally
+            OLED.sendBuffer();
+            delay(ANIMATION_DELAY);
+        }
+
+        // --- Page Exit Animation ---
+        current_y = 0;
+        target_y = -SCREEN_HEIGHT;
+        velocity_y = 0.0; integral_y = 0.0; last_error_y = 0.0;
+        while (abs(target_y - current_y) > 0.1 || abs(velocity_y) > 0.1) {
+            double error_y = target_y - current_y;
+            integral_y += error_y;
+            if (integral_y > 20) integral_y = 20; if (integral_y < -20) integral_y = -20;
+            double derivative_y = error_y - last_error_y;
+            velocity_y = g_config.anim_pid_kp * error_y + g_config.anim_pid_ki * integral_y + g_config.anim_pid_kd * derivative_y;
+            current_y += velocity_y;
+            last_error_y = error_y;
+
+            OLED.clearBuffer();
+            OLED.setDrawColor(1);
+            drawMenu(under_menu, 0, menu_y_offset); // Draw menu underneath
+            page->draw(round(current_y)); // Draw page content sliding out
+            OLED.sendBuffer();
+            delay(ANIMATION_DELAY);
+        }
+    }
 
     void drawMenuItems(Menu* menu, int x_offset, int y_offset, int skip_index = -1) {
         if (!menu) return;

@@ -1,6 +1,6 @@
 #include "element.hpp"
 
-MenuItem::MenuItem(String label, std::function<void()> action)
+MenuItem::MenuItem(String label, std::function<Page*()> action)
     : label(label), type(ItemType::OPTION), subMenu(nullptr), action(action) {}
 
 MenuItem::MenuItem(String label, Menu* subMenu)

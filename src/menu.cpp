@@ -1,3 +1,7 @@
+/**
+ * @file menu.cpp
+ * @brief Defines and builds the menu structure for the application.
+ */
 #include "menu.hpp"
 #include "pages.hpp"
 #include "config.hpp"
@@ -12,17 +16,15 @@ Menu pidMenu("PID Settings");
 Menu scrollPidMenu("Scroll PID");
 Menu animPidMenu("Animation PID");
 
-// Action wrappers to link menu items to page functions
-void action_edit_scroll_p() { page_edit_float("Scroll Kp", &g_config.scroll_pid_kp, 0.01f, 0.0f, 1.0f); }
-void action_edit_scroll_i() { page_edit_float("Scroll Ki", &g_config.scroll_pid_ki, 0.01f, 0.0f, 1.0f); }
-void action_edit_scroll_d() { page_edit_float("Scroll Kd", &g_config.scroll_pid_kd, 0.01f, 0.0f, 1.0f); }
-void action_edit_anim_p() { page_edit_float("Anim Kp", &g_config.anim_pid_kp, 0.01f, 0.0f, 1.0f); }
-void action_edit_anim_i() { page_edit_float("Anim Ki", &g_config.anim_pid_ki, 0.001f, 0.0f, 1.0f); }
-void action_edit_anim_d() { page_edit_float("Anim Kd", &g_config.anim_pid_kd, 0.01f, 0.0f, 1.0f); }
-
+/**
+ * @brief Builds the entire menu structure of the application.
+ * 
+ * This function creates all menu items and links them together to form
+ * a hierarchical menu system.
+ */
 void build_menus() {
     mainMenu.addItem(MenuItem("Settings", &settingsMenu));
-    mainMenu.addItem(MenuItem("About", page_show_info));
+    mainMenu.addItem(MenuItem("About", []() { return new InfoPage("ESP32 Menu Fw", "Version 1.0"); }));
     mainMenu.addItem(MenuItem("Item 3"));
     mainMenu.addItem(MenuItem("Item 4"));
 
@@ -36,14 +38,14 @@ void build_menus() {
     pidMenu.addItem(MenuItem("Scroll", &scrollPidMenu));
     pidMenu.addItem(MenuItem("Animation", &animPidMenu));
 
-    scrollPidMenu.addItem(MenuItem("Kp", action_edit_scroll_p));
-    scrollPidMenu.addItem(MenuItem("Ki", action_edit_scroll_i));
-    scrollPidMenu.addItem(MenuItem("Kd", action_edit_scroll_d));
+    scrollPidMenu.addItem(MenuItem("Kp", []() { return new EditFloatPage("Scroll Kp", &g_config.scroll_pid_kp, 0.01f, 0.0f, 1.0f); }));
+    scrollPidMenu.addItem(MenuItem("Ki", []() { return new EditFloatPage("Scroll Ki", &g_config.scroll_pid_ki, 0.01f, 0.0f, 1.0f); }));
+    scrollPidMenu.addItem(MenuItem("Kd", []() { return new EditFloatPage("Scroll Kd", &g_config.scroll_pid_kd, 0.01f, 0.0f, 1.0f); }));
 
-    animPidMenu.addItem(MenuItem("Kp", action_edit_anim_p));
-    animPidMenu.addItem(MenuItem("Ki", action_edit_anim_i));
-    animPidMenu.addItem(MenuItem("Kd", action_edit_anim_d));
+    animPidMenu.addItem(MenuItem("Kp", []() { return new EditFloatPage("Anim Kp", &g_config.anim_pid_kp, 0.01f, 0.0f, 1.0f); }));
+    animPidMenu.addItem(MenuItem("Ki", []() { return new EditFloatPage("Anim Ki", &g_config.anim_pid_ki, 0.001f, 0.0f, 1.0f); }));
+    animPidMenu.addItem(MenuItem("Kd", []() { return new EditFloatPage("Anim Kd", &g_config.anim_pid_kd, 0.01f, 0.0f, 1.0f); }));
 
-    systemMenu.addItem(MenuItem("Reboot", page_reboot));
+    systemMenu.addItem(MenuItem("Reboot", []() { return new RebootPage(); }));
     systemMenu.addItem(MenuItem("Reset"));
 }
