@@ -301,8 +301,8 @@ private:
             OLED.clearBuffer();
             OLED.setDrawColor(1);
 
-            drawMenuItems(from, round(x_offset_from), from_y_offset, from ? from->selected : -1);
-            drawMenuItems(to, round(current_x_to), to_y_offset, to ? to->selected : -1);
+            drawMenuItems(from, round(x_offset_from), from_y_offset);
+            drawMenuItems(to, round(current_x_to), to_y_offset);
 
             int box_y = round(select_y_current);
             int box_w = round(select_w_current);
@@ -311,14 +311,13 @@ private:
             
             OLED.setDrawColor(0);
 
-            if (from && from->size() > 0) {
-                OLED.setCursor(round(x_offset_from) + INIT_CURSOR_X + DEFAULT_TEXT_MARGIN, box_y + DEFAULT_TEXT_HEIGHT - DEFAULT_TEXT_MARGIN);
-                OLED.print(from->getItem(from->selected).label);
-            }
-            if (to && to->size() > 0) {
-                OLED.setCursor(round(current_x_to) + INIT_CURSOR_X + DEFAULT_TEXT_MARGIN, box_y + DEFAULT_TEXT_HEIGHT - DEFAULT_TEXT_MARGIN);
-                OLED.print(to->getItem(to->selected).label);
-            }
+            OLED.setClipWindow(INIT_CURSOR_X, box_y, 
+                               INIT_CURSOR_X + box_w + 2 * DEFAULT_TEXT_MARGIN, box_y + DEFAULT_TEXT_HEIGHT);
+
+            drawMenuItems(from, round(x_offset_from), from_y_offset);
+            drawMenuItems(to, round(current_x_to), to_y_offset);
+
+            OLED.setMaxClipWindow();
 
             OLED.sendBuffer();
             delay(ANIMATION_DELAY);
