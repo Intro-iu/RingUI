@@ -5,11 +5,12 @@
 #define SCREEN_WIDTH    128
 #define SCREEN_HEIGHT   32
 
-// Default font properties
-#define DEFAULT_TEXT_FONT   u8g2_font_6x12_me
-#define DEFAULT_TEXT_WIDTH  6
-#define DEFAULT_TEXT_HEIGHT 12
-#define DEFAULT_TEXT_MARGIN 2
+// Default components properties
+#define DEFAULT_TEXT_FONT       u8g2_font_6x12_me
+#define DEFAULT_TEXT_WIDTH      6
+#define DEFAULT_TEXT_HEIGHT     12
+#define DEFAULT_TEXT_MARGIN     2
+#define DEFAULT_PROGRESS_HEIGHT 4
 
 // Initial cursor position
 #define INIT_CURSOR_X   0

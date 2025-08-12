@@ -1,5 +1,6 @@
 #include "pages.hpp"
 #include "config.hpp"
+#include "progress.hpp"
 #include <Arduino.h>
 
 void page_reboot() {
@@ -29,9 +30,12 @@ void page_show_info() {
     OLED.setFont(DEFAULT_TEXT_FONT);
 }
 
-void page_edit_float(const char* title, float* value, float step) {
+void page_edit_float(const char* title, float* value, float step, float min, float max) {
     float currentValue = *value;
     unsigned long last_input = 0;
+    bool show_progress = (min != max);
+
+    ProgressBar progressBar(0, DEFAULT_TEXT_HEIGHT * 2 + 2, SCREEN_WIDTH, DEFAULT_PROGRESS_HEIGHT);
 
     OLED.setDrawColor(1);
     OLED.setFont(u8g2_font_6x12_me);
@@ -44,6 +48,9 @@ void page_edit_float(const char* title, float* value, float step) {
                     currentValue -= step;
                 } else { // Up
                     currentValue += step;
+                }
+                if (show_progress) {
+                    currentValue = constrain(currentValue, min, max);
                 }
             }
         }
@@ -67,6 +74,11 @@ void page_edit_float(const char* title, float* value, float step) {
         OLED.setCursor(0, DEFAULT_TEXT_HEIGHT * 2);
         OLED.print("Value: ");
         OLED.print(currentValue, 3);
+
+        if (show_progress) {
+            progressBar.draw(currentValue, min, max);
+        }
+
         OLED.sendBuffer();
         delay(10);
     }

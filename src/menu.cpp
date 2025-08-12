@@ -13,12 +13,12 @@ Menu scrollPidMenu("Scroll PID");
 Menu animPidMenu("Animation PID");
 
 // Action wrappers to link menu items to page functions
-void action_edit_scroll_p() { page_edit_float("Scroll Kp", &g_config.scroll_pid_kp, 0.01f); }
-void action_edit_scroll_i() { page_edit_float("Scroll Ki", &g_config.scroll_pid_ki, 0.01f); }
-void action_edit_scroll_d() { page_edit_float("Scroll Kd", &g_config.scroll_pid_kd, 0.01f); }
-void action_edit_anim_p() { page_edit_float("Anim Kp", &g_config.anim_pid_kp, 0.01f); }
-void action_edit_anim_i() { page_edit_float("Anim Ki", &g_config.anim_pid_ki, 0.001f); }
-void action_edit_anim_d() { page_edit_float("Anim Kd", &g_config.anim_pid_kd, 0.01f); }
+void action_edit_scroll_p() { page_edit_float("Scroll Kp", &g_config.scroll_pid_kp, 0.01f, 0.0f, 1.0f); }
+void action_edit_scroll_i() { page_edit_float("Scroll Ki", &g_config.scroll_pid_ki, 0.01f, 0.0f, 1.0f); }
+void action_edit_scroll_d() { page_edit_float("Scroll Kd", &g_config.scroll_pid_kd, 0.01f, 0.0f, 1.0f); }
+void action_edit_anim_p() { page_edit_float("Anim Kp", &g_config.anim_pid_kp, 0.01f, 0.0f, 1.0f); }
+void action_edit_anim_i() { page_edit_float("Anim Ki", &g_config.anim_pid_ki, 0.001f, 0.0f, 1.0f); }
+void action_edit_anim_d() { page_edit_float("Anim Kd", &g_config.anim_pid_kd, 0.01f, 0.0f, 1.0f); }
 
 void build_menus() {
     mainMenu.addItem(MenuItem("Settings", &settingsMenu));
