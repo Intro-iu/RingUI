@@ -48,7 +48,7 @@ public:
         std::vector<Menu*> menuStack;
         menuStack.push_back(startMenu);
 
-        while (!menuStack.empty()) {
+        while (true) {
             Menu* currentMenu = menuStack.back();
             int selectedIndex = showMenu(currentMenu);
 
@@ -68,19 +68,14 @@ public:
                     }
                 }
             } else { // Cancelled from a menu
-                Menu* parentMenu = nullptr;
                 if (menuStack.size() > 1) {
-                    parentMenu = menuStack[menuStack.size() - 2];
+                    Menu* parentMenu = menuStack[menuStack.size() - 2];
+                    // Animate back to the parent menu
+                    animateTransition(currentMenu, parentMenu, ANIM_BACKWARD);
+                    menuStack.pop_back();
                 }
-                // Animate back to the parent menu
-                animateTransition(currentMenu, parentMenu, ANIM_BACKWARD);
-                menuStack.pop_back();
             }
         }
-        OLED.clearBuffer();
-        OLED.setCursor(0, DEFAULT_TEXT_HEIGHT);
-        OLED.print("Bye!");
-        OLED.sendBuffer();
     }
 
 private:
