@@ -6,6 +6,9 @@ MenuItem::MenuItem(String label, std::function<Page*()> action)
 MenuItem::MenuItem(String label, Menu* subMenu)
     : label(label), type(ItemType::DIRECTORY), subMenu(subMenu), action(nullptr) {}
 
+MenuItem::MenuItem(String label, std::function<void()> switch_action, std::function<bool()> get_switch_state)
+    : label(label), type(ItemType::SWITCH), subMenu(nullptr), action(nullptr), switch_action(switch_action), get_switch_state(get_switch_state) {}
+
 Menu::Menu(String title) : title(title), parent(nullptr), selected(0) {}
 
 void Menu::addItem(const MenuItem& item) {

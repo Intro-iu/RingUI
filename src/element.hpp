@@ -15,7 +15,8 @@ class MenuItem {
 public:
     enum class ItemType {
         OPTION,    // An item that triggers an action (shows a page).
-        DIRECTORY  // An item that opens a submenu.
+        DIRECTORY, // An item that opens a submenu.
+        SWITCH     // An item that toggles a boolean value.
     };
 
     String label;
@@ -24,6 +25,10 @@ public:
     // The action to perform when an OPTION item is selected.
     // It should return a pointer to a new Page object.
     std::function<Page*()> action;
+    // The action to perform when a SWITCH item is selected.
+    std::function<void()> switch_action;
+    // A function to get the current state of the switch.
+    std::function<bool()> get_switch_state;
 
     /**
      * @brief Construct a new MenuItem for an option.
@@ -38,6 +43,14 @@ public:
      * @param subMenu A pointer to the submenu to open.
      */
     MenuItem(String label, Menu* subMenu);
+
+    /**
+     * @brief Construct a new MenuItem for a switch.
+     * @param label The text to display for the item.
+     * @param switch_action A function to toggle the switch's state.
+     * @param get_switch_state A function to get the current state of the switch.
+     */
+    MenuItem(String label, std::function<void()> switch_action, std::function<bool()> get_switch_state);
 };
 
 class Menu {

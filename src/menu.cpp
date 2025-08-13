@@ -24,7 +24,7 @@ Menu animPidMenu("Animation PID");
  */
 void build_menus() {
     mainMenu.addItem(MenuItem("Settings", &settingsMenu));
-    mainMenu.addItem(MenuItem("About", []() { return new InfoPage("RingUI  v_Master\nhttps://github.com/\n    Intro-iu/RingUI"); }));
+    mainMenu.addItem(MenuItem("About", []() { return new InfoPage("RingUI  v_Master\nhttps://github.com/\nIntro-iu/RingUI\nDemo: BV1EPbezSETx"); }));
     mainMenu.addItem(MenuItem("Item 3", [](){ return nullptr; }));
     mainMenu.addItem(MenuItem("Item 4", [](){ return nullptr; }));
 
@@ -47,5 +47,6 @@ void build_menus() {
     animPidMenu.addItem(MenuItem("Kd", []() { return new EditFloatPage("Anim Kd", &g_config.anim_pid_kd, 0.01f, 0.0f, 1.0f); }));
 
     systemMenu.addItem(MenuItem("Reboot", []() { return new RebootPage(); }));
+    systemMenu.addItem(MenuItem("Serial Control", []() { g_config.use_serial_control = !g_config.use_serial_control; }, []() { return g_config.use_serial_control; }));
     systemMenu.addItem(MenuItem("Reset", [](){ return nullptr; }));
 }
