@@ -8,50 +8,120 @@
 
 // --- InfoPage Implementation ---
 
-InfoPage::InfoPage(String content) : content(content) {
+InfoPage::InfoPage(String content)
+    : content(content), 
+      total_lines(0), 
+      last_input_time(0),
+      target_scroll_offset(0),
+      current_scroll_y(0.0),
+      velocity_y(0.0),
+      integral_y(0.0),
+      last_error_y(0.0)
+{
     entry_time = millis();
+    // Calculate total_lines
+    total_lines = 1;
+    for (unsigned int i = 0; i < content.length(); i++) {
+        if (content.charAt(i) == '\n') {
+            total_lines++;
+        }
+    }
 }
 
 bool InfoPage::handleInput() {
-    // Wait for a short delay to prevent accidental exit right after entering the page.
-    if (millis() - entry_time < 300) {
-        return false;
-    }
-
-    // Exit on any button press.
-    if (digitalRead(PIN_CONFIRM) == HIGH || digitalRead(PIN_CANCEL) == HIGH) {
+    // Exit on CANCEL button press.
+    if (digitalRead(PIN_CANCEL) == HIGH) {
         delay(50); // Debounce
-        while(digitalRead(PIN_CONFIRM) == HIGH || digitalRead(PIN_CANCEL) == HIGH);
+        while(digitalRead(PIN_CANCEL) == HIGH);
         return true; // Signal that the page is finished.
     }
-    return false;
+
+    // Handle scrolling
+    if (millis() - last_input_time > 100) { // A bit faster for smoother scrolling
+        last_input_time = millis();
+        if (digitalRead(PIN_IS_SCROLLING) == LOW) {
+            if (digitalRead(PIN_SCROLL_TOWARD) == HIGH) { // Down
+                target_scroll_offset++;
+            } else { // Up
+                target_scroll_offset--;
+            }
+            
+            int visible_lines = SCREEN_HEIGHT / DEFAULT_TEXT_HEIGHT;
+            int max_scroll = max(0, total_lines - visible_lines);
+            target_scroll_offset = constrain(target_scroll_offset, 0, max_scroll);
+        }
+    }
+
+    return false; // Page is not finished, continue displaying.
 }
 
 void InfoPage::draw(int y_offset) {
-    // Erase the area under the page by drawing a black box.
+    // --- PID Animation ---
+    double target_y = target_scroll_offset * DEFAULT_TEXT_HEIGHT;
+    if (abs(target_y - current_scroll_y) > 0.1 || abs(velocity_y) > 0.1) {
+        double error_y = target_y - current_scroll_y;
+        integral_y += error_y;
+        if (integral_y > 20) integral_y = 20; if (integral_y < -20) integral_y = -20;
+        double derivative_y = error_y - last_error_y;
+        velocity_y = g_config.scroll_pid_kp * error_y + g_config.scroll_pid_ki * integral_y + g_config.scroll_pid_kd * derivative_y;
+        current_scroll_y += velocity_y;
+        last_error_y = error_y;
+    } else {
+        current_scroll_y = target_y;
+    }
+
+    // --- Drawing ---
     OLED.setDrawColor(0);
     OLED.drawBox(0, y_offset, SCREEN_WIDTH, SCREEN_HEIGHT);
-
-    // Draw the text content in white.
     OLED.setDrawColor(1);
     OLED.setFont(u8g2_font_6x12_me);
 
-    int current_line_num = 0;
     int start_pos = 0;
     int newline_pos;
+    int line_num = 0;
 
-    while ((newline_pos = content.indexOf('\n', start_pos)) != -1) {
-        OLED.setCursor(0, DEFAULT_TEXT_HEIGHT * (current_line_num + 1) + y_offset);
-        OLED.print(content.substring(start_pos, newline_pos));
-        start_pos = newline_pos + 1;
-        current_line_num++;
+    while (start_pos < (int)content.length()) {
+        newline_pos = content.indexOf('\n', start_pos);
+        String line;
+        if (newline_pos == -1) {
+            line = content.substring(start_pos);
+            start_pos = content.length();
+        } else {
+            line = content.substring(start_pos, newline_pos);
+            start_pos = newline_pos + 1;
+        }
+
+        // Calculate y position for the line, considering the animated scroll
+        int line_y_pos = DEFAULT_TEXT_HEIGHT * (line_num + 1) - round(current_scroll_y);
+        
+        // Culling: Only draw lines that are visible on screen
+        if (line_y_pos > -DEFAULT_TEXT_HEIGHT && line_y_pos < SCREEN_HEIGHT + DEFAULT_TEXT_HEIGHT) {
+            OLED.setCursor(0, line_y_pos + y_offset);
+            OLED.print(line);
+        }
+        
+        line_num++;
     }
-    // Print the last part of the string
-    OLED.setCursor(0, DEFAULT_TEXT_HEIGHT * (current_line_num + 1) + y_offset);
-    OLED.print(content.substring(start_pos));
+    
+    // --- Scrollbar ---
+    int visible_lines = SCREEN_HEIGHT / DEFAULT_TEXT_HEIGHT;
+    if (total_lines > visible_lines) {
+        OLED.drawVLine(SCREEN_WIDTH - 2, y_offset, SCREEN_HEIGHT);
+
+        int slider_height = 5;
+        int max_scroll_pixels = (total_lines - visible_lines) * DEFAULT_TEXT_HEIGHT;
+        float scroll_percentage = max_scroll_pixels > 0 ? current_scroll_y / max_scroll_pixels : 0;
+        
+        int travel_distance = SCREEN_HEIGHT - slider_height;
+        int slider_y = scroll_percentage * travel_distance;
+
+        OLED.drawBox(SCREEN_WIDTH - 3, y_offset + slider_y, 2, slider_height);
+    }
     
     OLED.setFont(DEFAULT_TEXT_FONT);
 }
+
+
 
 // --- EditFloatPage Implementation ---
 

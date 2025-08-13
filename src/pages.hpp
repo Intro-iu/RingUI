@@ -23,7 +23,16 @@ public:
 
 private:
     String content;
-    unsigned long entry_time; // To prevent accidental exit immediately after entry.
+    unsigned long entry_time;
+    int total_lines;
+    unsigned long last_input_time;
+
+    // Animation variables
+    int target_scroll_offset; // Target line
+    double current_scroll_y;  // Current scroll position in pixels
+    double velocity_y;
+    double integral_y;
+    double last_error_y;
 };
 
 /**
