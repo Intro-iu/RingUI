@@ -151,11 +151,14 @@ private:
             if (i == skip_index) continue;
             OLED.setCursor(x_offset + INIT_CURSOR_X + DEFAULT_TEXT_MARGIN, 
                         i * DEFAULT_TEXT_HEIGHT + DEFAULT_TEXT_HEIGHT - DEFAULT_TEXT_MARGIN + y_offset);
-            String label = menu->getItem(i).label;
+            OLED.print(menu->getItem(i).label);
             if (menu->getItem(i).type == MenuItem::ItemType::SWITCH) {
-                label += menu->getItem(i).get_switch_state() ? " [ON]" : " [OFF]";
+                String state = menu->getItem(i).get_switch_state() ? "[ON]" : "[OFF]";
+                int state_width = OLED.getStrWidth(state.c_str());
+                OLED.setCursor(SCREEN_WIDTH - state_width - DEFAULT_TEXT_MARGIN, 
+                            i * DEFAULT_TEXT_HEIGHT + DEFAULT_TEXT_HEIGHT - DEFAULT_TEXT_MARGIN + y_offset);
+                OLED.print(state);
             }
-            OLED.print(label);
         }
     }
 
@@ -370,12 +373,7 @@ private:
                 currentY = scrollTargetY;
             }
 
-            double targetWidth;
-            String label = menu->getItem(menu->selected).label;
-            if (menu->getItem(menu->selected).type == MenuItem::ItemType::SWITCH) {
-                label += menu->getItem(menu->selected).get_switch_state() ? " [ON]" : " [OFF]";
-            }
-            targetWidth = OLED.getStrWidth(label.c_str());
+            double targetWidth = OLED.getStrWidth(menu->getItem(menu->selected).label.c_str());
             if (abs(targetWidth - currentWidth) > 0.1 || abs(velocityW) > 0.1) {
                 velocityW = width_pid.update(targetWidth, currentWidth);
                 currentWidth += velocityW;
@@ -396,11 +394,14 @@ private:
             for (int i = 0; i < menu->size(); i++) {
                 OLED.setCursor(INIT_CURSOR_X + DEFAULT_TEXT_MARGIN, 
                             i * DEFAULT_TEXT_HEIGHT + DEFAULT_TEXT_HEIGHT - DEFAULT_TEXT_MARGIN + scrollScreen);
-                String label = menu->getItem(i).label;
+                OLED.print(menu->getItem(i).label);
                 if (menu->getItem(i).type == MenuItem::ItemType::SWITCH) {
-                    label += menu->getItem(i).get_switch_state() ? " [ON]" : " [OFF]";
+                    String state = menu->getItem(i).get_switch_state() ? "[ON]" : "[OFF]";
+                    int state_width = OLED.getStrWidth(state.c_str());
+                    OLED.setCursor(SCREEN_WIDTH - state_width - DEFAULT_TEXT_MARGIN, 
+                                i * DEFAULT_TEXT_HEIGHT + DEFAULT_TEXT_HEIGHT - DEFAULT_TEXT_MARGIN + scrollScreen);
+                    OLED.print(state);
                 }
-                OLED.print(label);
             }
             
             int selected_box_y = round(currentY) + scrollScreen;
@@ -415,11 +416,7 @@ private:
             for (int i = 0; i < menu->size(); i++) {
                 OLED.setCursor(INIT_CURSOR_X + DEFAULT_TEXT_MARGIN, 
                             i * DEFAULT_TEXT_HEIGHT + DEFAULT_TEXT_HEIGHT - DEFAULT_TEXT_MARGIN + scrollScreen);
-                String label = menu->getItem(i).label;
-                if (menu->getItem(i).type == MenuItem::ItemType::SWITCH) {
-                    label += menu->getItem(i).get_switch_state() ? " [ON]" : " [OFF]";
-                }
-                OLED.print(label);
+                OLED.print(menu->getItem(i).label);
             }
 
             OLED.setMaxClipWindow();
