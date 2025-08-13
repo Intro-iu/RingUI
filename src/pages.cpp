@@ -60,10 +60,10 @@ bool EditFloatPage::handleInput() {
     if (millis() - last_input_time > 100) {
         last_input_time = millis();
         if (digitalRead(PIN_IS_SCROLLING) == LOW) {
-            if (digitalRead(PIN_SCROLL_TOWARD) == HIGH) { // Down
-                current_value -= step;
-            } else { // Up
+            if (digitalRead(PIN_SCROLL_TOWARD) == HIGH) { // UP
                 current_value += step;
+            } else { // DOWN
+                current_value -= step;
             }
             if (show_progress) {
                 current_value = constrain(current_value, min, max);
