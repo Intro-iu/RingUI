@@ -10,9 +10,9 @@
 // --- InfoPage Implementation ---
 
 InfoPage::InfoPage(String content)
-    : content(content), 
+    : Page(),
+      content(content), 
       total_lines(0), 
-      last_input_time(0),
       target_scroll_offset(0),
       current_scroll_y(0.0),
       velocity_y(0.0),
@@ -28,29 +28,20 @@ InfoPage::InfoPage(String content)
     }
 }
 
-bool InfoPage::handleInput() {
-    // Exit on CANCEL button press.
-    if (is_button_pressed(PIN_CANCEL)) {
-        return true; // Signal that the page is finished.
-    }
+void InfoPage::onScrollUp() {
+    target_scroll_offset--;
+    constrainScroll();
+}
 
-    // Handle scrolling
-    if (millis() - last_input_time > 100) { // A bit faster for smoother scrolling
-        last_input_time = millis();
-        if (digitalRead(PIN_IS_SCROLLING) == LOW) {
-            if (digitalRead(PIN_SCROLL_TOWARD) == HIGH) { // Down
-                target_scroll_offset++;
-            } else { // Up
-                target_scroll_offset--;
-            }
-            
-            int visible_lines = SCREEN_HEIGHT / DEFAULT_TEXT_HEIGHT;
-            int max_scroll = max(0, total_lines - visible_lines);
-            target_scroll_offset = constrain(target_scroll_offset, 0, max_scroll);
-        }
-    }
+void InfoPage::onScrollDown() {
+    target_scroll_offset++;
+    constrainScroll();
+}
 
-    return false; // Page is not finished, continue displaying.
+void InfoPage::constrainScroll() {
+    int visible_lines = SCREEN_HEIGHT / DEFAULT_TEXT_HEIGHT;
+    int max_scroll = max(0, total_lines - visible_lines);
+    target_scroll_offset = constrain(target_scroll_offset, 0, max_scroll);
 }
 
 void InfoPage::draw(int y_offset) {
@@ -119,41 +110,34 @@ void InfoPage::draw(int y_offset) {
 // --- EditFloatPage Implementation ---
 
 EditFloatPage::EditFloatPage(const char* title, float* value, float step, float min, float max)
-    : title(title), 
+    : Page(),
+      title(title), 
       value_ptr(value), 
       current_value(*value), 
       step(step), min(min), max(max),
       show_progress(min != max),
       progress_bar(0, DEFAULT_TEXT_HEIGHT * 2 + 2, SCREEN_WIDTH, DEFAULT_PROGRESS_HEIGHT) 
 {
-    last_input_time = 0;
+    // last_input_time is now handled by the base Page class
 }
 
-bool EditFloatPage::handleInput() {
-    if (millis() - last_input_time > 100) {
-        last_input_time = millis();
-        if (digitalRead(PIN_IS_SCROLLING) == LOW) {
-            if (digitalRead(PIN_SCROLL_TOWARD) == HIGH) { // UP
-                current_value += step;
-            } else { // DOWN
-                current_value -= step;
-            }
-            if (show_progress) {
-                current_value = constrain(current_value, min, max);
-            }
-        }
+void EditFloatPage::onScrollUp() {
+    current_value += step;
+    if (show_progress) {
+        current_value = constrain(current_value, min, max);
     }
+}
 
-    if (is_button_pressed(PIN_CONFIRM)) {
-        *value_ptr = current_value; // Save the new value
-        return true; // Signal that the page is finished.
+void EditFloatPage::onScrollDown() {
+    current_value -= step;
+    if (show_progress) {
+        current_value = constrain(current_value, min, max);
     }
+}
 
-    if (is_button_pressed(PIN_CANCEL)) {
-        return true; // Signal that the page is finished, without saving.
-    }
-
-    return false;
+bool EditFloatPage::onConfirm() {
+    *value_ptr = current_value; // Save the new value
+    return true; // Signal that the page is finished.
 }
 
 void EditFloatPage::draw(int y_offset) {
@@ -180,24 +164,23 @@ void EditFloatPage::draw(int y_offset) {
 
 // --- RebootPage Implementation ---
 
-RebootPage::RebootPage() {
+RebootPage::RebootPage() 
+    : Page() 
+{
     entry_time = millis();
 }
 
-bool RebootPage::handleInput() {
-    // Allow canceling within 3 seconds.
-    if (millis() - entry_time < 3000) {
-        if (is_button_pressed(PIN_CANCEL)) {
-            return true; // Page is finished, reboot is canceled.
-        }
-    } else {
-        // Timeout reached, reboot now.
-        ESP.restart();
-    }
-    return false; // This page technically never finishes.
+bool RebootPage::onCancel() {
+    // Allow canceling only within the time limit
+    return (millis() - entry_time < 3000);
 }
 
 void RebootPage::draw(int y_offset) {
+    // If timeout is reached, reboot. This is checked on every frame.
+    if (millis() - entry_time >= 3000) {
+        ESP.restart();
+    }
+
     // Erase the area under the page by drawing a black box.
     OLED.setDrawColor(0);
     OLED.drawBox(0, y_offset, SCREEN_WIDTH, SCREEN_HEIGHT);

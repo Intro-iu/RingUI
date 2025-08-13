@@ -19,14 +19,17 @@ extern U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C OLED;
 class InfoPage : public Page {
 public:
     InfoPage(String content);
-    bool handleInput() override;
     void draw(int y_offset) override;
 
+protected:
+    void onScrollUp() override;
+    void onScrollDown() override;
+
 private:
+    void constrainScroll();
     String content;
     unsigned long entry_time;
     int total_lines;
-    unsigned long last_input_time;
 
     // Animation variables
     int target_scroll_offset; // Target line
@@ -42,8 +45,12 @@ private:
 class EditFloatPage : public Page {
 public:
     EditFloatPage(const char* title, float* value, float step, float min = 0.0f, float max = 0.0f);
-    bool handleInput() override;
     void draw(int y_offset) override;
+
+protected:
+    void onScrollUp() override;
+    void onScrollDown() override;
+    bool onConfirm() override;
 
 private:
     const char* title;
@@ -52,7 +59,6 @@ private:
     float step, min, max;
     bool show_progress;    // True if a min and max range is provided.
     ProgressBar progress_bar;
-    unsigned long last_input_time;
 };
 
 /**
@@ -62,8 +68,10 @@ private:
 class RebootPage : public Page {
 public:
     RebootPage();
-    bool handleInput() override;
     void draw(int y_offset) override;
+
+protected:
+    bool onCancel() override;
 
 private:
     unsigned long entry_time; // Time of page entry to control reboot delay.
