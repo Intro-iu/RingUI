@@ -6,6 +6,7 @@
 
 #include "page.hpp"
 #include "progress.hpp"
+#include "pid.hpp"
 #include <U8g2lib.h>
 
 // Forward-declare the OLED driver to avoid including the full header.
@@ -31,8 +32,7 @@ private:
     int target_scroll_offset; // Target line
     double current_scroll_y;  // Current scroll position in pixels
     double velocity_y;
-    double integral_y;
-    double last_error_y;
+    PIDController scroll_pid;
 };
 
 /**

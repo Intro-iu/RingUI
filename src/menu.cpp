@@ -25,15 +25,15 @@ Menu animPidMenu("Animation PID");
 void build_menus() {
     mainMenu.addItem(MenuItem("Settings", &settingsMenu));
     mainMenu.addItem(MenuItem("About", []() { return new InfoPage("RingUI  v_Master\nhttps://github.com/\n    Intro-iu/RingUI"); }));
-    mainMenu.addItem(MenuItem("Item 3"));
-    mainMenu.addItem(MenuItem("Item 4"));
+    mainMenu.addItem(MenuItem("Item 3", [](){ return nullptr; }));
+    mainMenu.addItem(MenuItem("Item 4", [](){ return nullptr; }));
 
     settingsMenu.addItem(MenuItem("Display", &displayMenu));
     settingsMenu.addItem(MenuItem("PID", &pidMenu));
     settingsMenu.addItem(MenuItem("System", &systemMenu));
 
-    displayMenu.addItem(MenuItem("Contrast"));
-    displayMenu.addItem(MenuItem("Timeout"));
+    displayMenu.addItem(MenuItem("Contrast", [](){ return nullptr; }));
+    displayMenu.addItem(MenuItem("Timeout", [](){ return nullptr; }));
 
     pidMenu.addItem(MenuItem("Scroll", &scrollPidMenu));
     pidMenu.addItem(MenuItem("Animation", &animPidMenu));
@@ -47,5 +47,5 @@ void build_menus() {
     animPidMenu.addItem(MenuItem("Kd", []() { return new EditFloatPage("Anim Kd", &g_config.anim_pid_kd, 0.01f, 0.0f, 1.0f); }));
 
     systemMenu.addItem(MenuItem("Reboot", []() { return new RebootPage(); }));
-    systemMenu.addItem(MenuItem("Reset"));
+    systemMenu.addItem(MenuItem("Reset", [](){ return nullptr; }));
 }

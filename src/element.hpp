@@ -30,7 +30,7 @@ public:
      * @param label The text to display for the item.
      * @param action A function that creates and returns a new Page object.
      */
-    MenuItem(String label, std::function<Page*()> action = nullptr);
+    MenuItem(String label, std::function<Page*()> action);
 
     /**
      * @brief Construct a new MenuItem for a submenu link.

@@ -4,6 +4,7 @@
  */
 #include "pages.hpp"
 #include "config.hpp"
+#include "input.hpp"
 #include <Arduino.h>
 
 // --- InfoPage Implementation ---
@@ -15,8 +16,7 @@ InfoPage::InfoPage(String content)
       target_scroll_offset(0),
       current_scroll_y(0.0),
       velocity_y(0.0),
-      integral_y(0.0),
-      last_error_y(0.0)
+      scroll_pid(g_config.scroll_pid_kp, g_config.scroll_pid_ki, g_config.scroll_pid_kd)
 {
     entry_time = millis();
     // Calculate total_lines
@@ -30,9 +30,7 @@ InfoPage::InfoPage(String content)
 
 bool InfoPage::handleInput() {
     // Exit on CANCEL button press.
-    if (digitalRead(PIN_CANCEL) == HIGH) {
-        delay(50); // Debounce
-        while(digitalRead(PIN_CANCEL) == HIGH);
+    if (is_button_pressed(PIN_CANCEL)) {
         return true; // Signal that the page is finished.
     }
 
@@ -59,13 +57,8 @@ void InfoPage::draw(int y_offset) {
     // --- PID Animation ---
     double target_y = target_scroll_offset * DEFAULT_TEXT_HEIGHT;
     if (abs(target_y - current_scroll_y) > 0.1 || abs(velocity_y) > 0.1) {
-        double error_y = target_y - current_scroll_y;
-        integral_y += error_y;
-        if (integral_y > 20) integral_y = 20; if (integral_y < -20) integral_y = -20;
-        double derivative_y = error_y - last_error_y;
-        velocity_y = g_config.scroll_pid_kp * error_y + g_config.scroll_pid_ki * integral_y + g_config.scroll_pid_kd * derivative_y;
+        velocity_y = scroll_pid.update(target_y, current_scroll_y);
         current_scroll_y += velocity_y;
-        last_error_y = error_y;
     } else {
         current_scroll_y = target_y;
     }
@@ -151,16 +144,12 @@ bool EditFloatPage::handleInput() {
         }
     }
 
-    if (digitalRead(PIN_CONFIRM) == HIGH) {
-        delay(50); // Debounce
-        while(digitalRead(PIN_CONFIRM) == HIGH);
+    if (is_button_pressed(PIN_CONFIRM)) {
         *value_ptr = current_value; // Save the new value
         return true; // Signal that the page is finished.
     }
 
-    if (digitalRead(PIN_CANCEL) == HIGH) {
-        delay(50); // Debounce
-        while(digitalRead(PIN_CANCEL) == HIGH);
+    if (is_button_pressed(PIN_CANCEL)) {
         return true; // Signal that the page is finished, without saving.
     }
 
@@ -198,9 +187,7 @@ RebootPage::RebootPage() {
 bool RebootPage::handleInput() {
     // Allow canceling within 3 seconds.
     if (millis() - entry_time < 3000) {
-        if (digitalRead(PIN_CANCEL) == HIGH) {
-            delay(50); // Debounce
-            while(digitalRead(PIN_CANCEL) == HIGH);
+        if (is_button_pressed(PIN_CANCEL)) {
             return true; // Page is finished, reboot is canceled.
         }
     } else {
