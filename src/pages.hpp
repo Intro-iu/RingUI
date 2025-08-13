@@ -17,12 +17,12 @@ extern U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C OLED;
  */
 class InfoPage : public Page {
 public:
-    InfoPage(String line1, String line2);
+    InfoPage(String content);
     bool handleInput() override;
     void draw(int y_offset) override;
 
 private:
-    String line1, line2;
+    String content;
     unsigned long entry_time; // To prevent accidental exit immediately after entry.
 };
 

@@ -24,7 +24,7 @@ Menu animPidMenu("Animation PID");
  */
 void build_menus() {
     mainMenu.addItem(MenuItem("Settings", &settingsMenu));
-    mainMenu.addItem(MenuItem("About", []() { return new InfoPage("ESP32 Menu Fw", "Version 1.0"); }));
+    mainMenu.addItem(MenuItem("About", []() { return new InfoPage("RingUI  v_Master\nhttps://github.com/\n    Intro-iu/RingUI"); }));
     mainMenu.addItem(MenuItem("Item 3"));
     mainMenu.addItem(MenuItem("Item 4"));
 

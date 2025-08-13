@@ -8,7 +8,7 @@
 
 // --- InfoPage Implementation ---
 
-InfoPage::InfoPage(String line1, String line2) : line1(line1), line2(line2) {
+InfoPage::InfoPage(String content) : content(content) {
     entry_time = millis();
 }
 
@@ -35,10 +35,20 @@ void InfoPage::draw(int y_offset) {
     // Draw the text content in white.
     OLED.setDrawColor(1);
     OLED.setFont(u8g2_font_6x12_me);
-    OLED.setCursor(0, DEFAULT_TEXT_HEIGHT + y_offset);
-    OLED.print(line1);
-    OLED.setCursor(0, DEFAULT_TEXT_HEIGHT * 2 + y_offset);
-    OLED.print(line2);
+
+    int current_line_num = 0;
+    int start_pos = 0;
+    int newline_pos;
+
+    while ((newline_pos = content.indexOf('\n', start_pos)) != -1) {
+        OLED.setCursor(0, DEFAULT_TEXT_HEIGHT * (current_line_num + 1) + y_offset);
+        OLED.print(content.substring(start_pos, newline_pos));
+        start_pos = newline_pos + 1;
+        current_line_num++;
+    }
+    // Print the last part of the string
+    OLED.setCursor(0, DEFAULT_TEXT_HEIGHT * (current_line_num + 1) + y_offset);
+    OLED.print(content.substring(start_pos));
     
     OLED.setFont(DEFAULT_TEXT_FONT);
 }
