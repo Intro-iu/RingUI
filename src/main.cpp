@@ -18,7 +18,7 @@ void setup() {
 
     controller.setup();
     
-    build_menus();
+    build_menus(controller);
 
     controller.handle(&mainMenu);
 }

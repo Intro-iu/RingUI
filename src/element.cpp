@@ -1,7 +1,7 @@
 #include "element.hpp"
 
-MenuItem::MenuItem(String label, std::function<Page*()> action)
-    : label(label), type(ItemType::OPTION), subMenu(nullptr), action(action) {}
+MenuItem::MenuItem(String label, std::function<Page*()> action, std::function<void()> on_close_callback)
+    : label(label), type(ItemType::OPTION), subMenu(nullptr), action(action), on_close_callback(on_close_callback) {}
 
 MenuItem::MenuItem(String label, Menu* subMenu)
     : label(label), type(ItemType::DIRECTORY), subMenu(subMenu), action(nullptr) {}

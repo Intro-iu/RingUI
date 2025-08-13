@@ -41,6 +41,11 @@ public:
      * @brief The main entry point and loop for the UI.
      * @param startMenu The root menu to display.
      */
+    void update_pid_gains() {
+        anim_pid.set_gains(g_config.anim_pid_kp, g_config.anim_pid_ki, g_config.anim_pid_kd);
+        scroll_pid.set_gains(g_config.scroll_pid_kp, g_config.scroll_pid_ki, g_config.scroll_pid_kd);
+    }
+
     void handle(Menu* startMenu) {
         if (!startMenu) return;
 
@@ -62,7 +67,7 @@ public:
                     // Create the page and handle its lifecycle
                     Page* page = selectedItem.action();
                     if (page) {
-                        handlePage(page, currentMenu);
+                        handlePage(page, currentMenu, selectedItem);
                         delete page; // Clean up the page object after it's done
                     }
                 } else if (selectedItem.type == MenuItem::ItemType::SWITCH) {
@@ -93,7 +98,7 @@ private:
      * @param page A pointer to the page to handle.
      * @param under_menu The menu that is displayed underneath the page during animations.
      */
-    void handlePage(Page* page, Menu* under_menu) {
+    void handlePage(Page* page, Menu* under_menu, MenuItem& item) {
         double current_y, target_y;
         double velocity_y = 0.0;
         int menu_y_offset = calculate_scroll_offset(under_menu);
@@ -125,6 +130,11 @@ private:
             page->draw(0); // Draw page content normally
             OLED.sendBuffer();
             delay(ANIMATION_DELAY);
+        }
+
+        // If the item has a close callback, execute it.
+        if (item.on_close_callback) {
+            item.on_close_callback();
         }
 
         // --- Page Exit Animation ---

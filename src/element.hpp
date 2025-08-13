@@ -25,6 +25,8 @@ public:
     // The action to perform when an OPTION item is selected.
     // It should return a pointer to a new Page object.
     std::function<Page*()> action;
+    // An optional callback to execute when the page is closed.
+    std::function<void()> on_close_callback;
     // The action to perform when a SWITCH item is selected.
     std::function<void()> switch_action;
     // A function to get the current state of the switch.
@@ -34,8 +36,9 @@ public:
      * @brief Construct a new MenuItem for an option.
      * @param label The text to display for the item.
      * @param action A function that creates and returns a new Page object.
+     * @param on_close_callback An optional function to call when the page is closed.
      */
-    MenuItem(String label, std::function<Page*()> action);
+    MenuItem(String label, std::function<Page*()> action, std::function<void()> on_close_callback = nullptr);
 
     /**
      * @brief Construct a new MenuItem for a submenu link.
