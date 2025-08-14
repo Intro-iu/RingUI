@@ -1,17 +1,59 @@
 #include "input.hpp"
 #include "config.hpp"
-#include <Arduino.h>
 
-/**
- * @brief Checks if a button is pressed, with debouncing.
- * 
- * This function checks the state of a button connected to a specific pin.
- * It includes a software debounce delay to prevent multiple triggers from a single press.
- * It waits for the button to be released before returning.
- * 
- * @param pin The GPIO pin number where the button is connected.
- * @return true if the button was pressed and released, false otherwise.
- */
+RotaryEncoder* RotaryEncoder::instance = nullptr;
+
+RotaryEncoder g_encoder(PIN_ENCODER_A, PIN_ENCODER_B, PIN_ENCODER_BUTTON);
+
+RotaryEncoder::RotaryEncoder(int pinA, int pinB, int pinButton) 
+    : _pinA(pinA), _pinB(pinB), _pinButton(pinButton) {
+    instance = this;
+}
+
+void RotaryEncoder::begin() {
+    pinMode(_pinA, INPUT_PULLUP);
+    pinMode(_pinB, INPUT_PULLUP);
+    pinMode(_pinButton, INPUT_PULLUP);
+    attachInterrupt(digitalPinToInterrupt(_pinA), readEncoder, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(_pinB), readEncoder, CHANGE);
+}
+
+void IRAM_ATTR RotaryEncoder::readEncoder() {
+    int msb = digitalRead(instance->_pinA);
+    int lsb = digitalRead(instance->_pinB);
+
+    int encoded = (msb << 1) | lsb;
+    int sum = (instance->_lastEncoded << 2) | encoded;
+
+    if(sum == 0b1101 || sum == 0b0100 || sum == 0b0010 || sum == 0b1011) {
+        long val = instance->_encoderValue; val++; instance->_encoderValue = val;
+    } else if (sum == 0b1110 || sum == 0b0111 || sum == 0b0001 || sum == 0b1000) {
+        long val = instance->_encoderValue; val--; instance->_encoderValue = val;
+    }
+
+    instance->_lastEncoded = encoded;
+}
+
+RotaryDirection RotaryEncoder::getDirection() {
+    long value;
+    noInterrupts();
+    value = _encoderValue;
+    _encoderValue = 0;
+    interrupts();
+
+    if (value > 0) return RotaryDirection::COUNTERCLOCKWISE;
+    if (value < 0) return RotaryDirection::CLOCKWISE;
+    return RotaryDirection::NOROTATION;
+}
+
+bool RotaryEncoder::isPressed() {
+    if (digitalRead(_pinButton) == LOW && millis() - _lastButtonPress > INPUT_DELAY) {
+        _lastButtonPress = millis();
+        return true;
+    }
+    return false;
+}
+
 bool is_button_pressed(int pin) {
     if (digitalRead(pin) == HIGH) {
         delay(INPUT_DELAY); // Use configured debounce delay
@@ -21,11 +63,4 @@ bool is_button_pressed(int pin) {
         }
     }
     return false;
-}
-
-char get_serial_input() {
-    if (Serial.available() > 0) {
-        return Serial.read();
-    }
-    return 0;
 }

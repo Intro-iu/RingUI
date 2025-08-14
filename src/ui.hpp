@@ -132,10 +132,8 @@ private:
             delay(ANIMATION_DELAY);
         }
 
-        // If the item has a close callback, execute it.
-        if (item.on_close_callback) {
-            item.on_close_callback();
-        }
+        // Update PID gains after page is done, in case they were changed.
+        update_pid_gains();
 
         // --- Page Exit Animation ---
         current_y = 0;
@@ -338,41 +336,19 @@ private:
         }
 
         while (true) {
-            if (g_config.use_serial_control) {
-                char serial_cmd = get_serial_input();
-                if (serial_cmd != 0) {
-                    switch (serial_cmd) {
-                        case 'w': // Up
-                            if (menu->selected > 0) menu->selected--;
-                            break;
-                        case 's': // Down
-                            if (menu->selected < menu->size() - 1) menu->selected++;
-                            break;
-                        case 'e': // Confirm
-                            return menu->selected;
-                        case 'q': // Cancel
-                            return -1;
-                    }
-                }
+            RotaryDirection dir = g_encoder.getDirection();
+            if (dir == RotaryDirection::CLOCKWISE) {
+                if (menu->selected < menu->size() - 1) menu->selected++;
+            } else if (dir == RotaryDirection::COUNTERCLOCKWISE) {
+                if (menu->selected > 0) menu->selected--;
             }
 
-            if (is_button_pressed(PIN_CANCEL)) {
-                return -1;
-            }
-            if (is_button_pressed(PIN_CONFIRM)) {
+            if (g_encoder.isPressed()) {
                 return menu->selected;
             }
 
-            if (millis() - previousMillis_Input >= INPUT_DELAY) {
-                previousMillis_Input = millis();
-
-                if (digitalRead(PIN_IS_SCROLLING) == LOW) {
-                    if (digitalRead(PIN_SCROLL_TOWARD) == HIGH) { // Down
-                        if (menu->selected < menu->size() - 1) menu->selected++;
-                    } else { // Up
-                        if (menu->selected > 0) menu->selected--;
-                    }
-                }
+            if (is_button_pressed(PIN_CANCEL)) { // Assuming PIN_CANCEL is still valid
+                return -1;
             }
 
             double scrollTargetY = menu->selected * DEFAULT_TEXT_HEIGHT;

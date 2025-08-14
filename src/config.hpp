@@ -22,14 +22,14 @@ static constexpr int SYS_SDA = 33;
 static constexpr int OLED_ADDR = 0x3C;
 static constexpr int CTRL_ADDR = 0x4C;
 
-static constexpr int INPUT_DELAY = 150;
+static constexpr int INPUT_DELAY = 250;
 static constexpr int ANIMATION_DELAY = 10;
 
 // Hardware pins
-static constexpr int PIN_CONFIRM = 14;
 static constexpr int PIN_CANCEL = 15;
-static constexpr int PIN_IS_SCROLLING = 0;
-static constexpr int PIN_SCROLL_TOWARD = 17;
+static constexpr int PIN_ENCODER_BUTTON = 14;
+static constexpr int PIN_ENCODER_A = 13;
+static constexpr int PIN_ENCODER_B = 12;
 
 // Configuration struct
 struct AppConfig {
