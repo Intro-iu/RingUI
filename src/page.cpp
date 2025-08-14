@@ -16,11 +16,13 @@ bool Page::handleInput() {
     }
 
     // Handle encoder rotation
-    RotaryDirection dir = g_encoder.getDirection();
-    if (dir == RotaryDirection::CLOCKWISE) {
-        onScrollDown();
-    } else if (dir == RotaryDirection::COUNTERCLOCKWISE) {
-        onScrollUp();
+    RotaryDirection dir;
+    while ((dir = g_encoder.getDirection()) != RotaryDirection::NOROTATION) {
+        if (dir == RotaryDirection::CLOCKWISE) {
+            onScrollDown();
+        } else if (dir == RotaryDirection::COUNTERCLOCKWISE) {
+            onScrollUp();
+        }
     }
 
     // Handle encoder button press for confirm

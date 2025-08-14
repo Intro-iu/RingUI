@@ -122,14 +122,14 @@ EditFloatPage::EditFloatPage(const char* title, float* value, float step, float 
 }
 
 void EditFloatPage::onScrollUp() {
-    current_value += step;
+    current_value -= step;
     if (show_progress) {
         current_value = constrain(current_value, min, max);
     }
 }
 
 void EditFloatPage::onScrollDown() {
-    current_value -= step;
+    current_value += step;
     if (show_progress) {
         current_value = constrain(current_value, min, max);
     }

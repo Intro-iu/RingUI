@@ -336,11 +336,13 @@ private:
         }
 
         while (true) {
-            RotaryDirection dir = g_encoder.getDirection();
-            if (dir == RotaryDirection::CLOCKWISE) {
-                if (menu->selected < menu->size() - 1) menu->selected++;
-            } else if (dir == RotaryDirection::COUNTERCLOCKWISE) {
-                if (menu->selected > 0) menu->selected--;
+            RotaryDirection dir;
+            while ((dir = g_encoder.getDirection()) != RotaryDirection::NOROTATION) {
+                if (dir == RotaryDirection::CLOCKWISE) {
+                    if (menu->selected < menu->size() - 1) menu->selected++;
+                } else if (dir == RotaryDirection::COUNTERCLOCKWISE) {
+                    if (menu->selected > 0) menu->selected--;
+                }
             }
 
             if (g_encoder.isPressed()) {
