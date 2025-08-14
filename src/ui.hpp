@@ -163,7 +163,7 @@ private:
             if (menu->getItem(i).type == MenuItem::ItemType::SWITCH) {
                 String state = menu->getItem(i).get_switch_state() ? "[ON]" : "[OFF]";
                 int state_width = OLED.getStrWidth(state.c_str());
-                OLED.setCursor(SCREEN_WIDTH - state_width - DEFAULT_TEXT_MARGIN, 
+                OLED.setCursor(x_offset + SCREEN_WIDTH - state_width - DEFAULT_TEXT_MARGIN, 
                             i * DEFAULT_TEXT_HEIGHT + DEFAULT_TEXT_HEIGHT - DEFAULT_TEXT_MARGIN + y_offset);
                 OLED.print(state);
             }
@@ -181,6 +181,13 @@ private:
             OLED.setCursor(x_offset + INIT_CURSOR_X + DEFAULT_TEXT_MARGIN, 
                         i * DEFAULT_TEXT_HEIGHT + DEFAULT_TEXT_HEIGHT - DEFAULT_TEXT_MARGIN + y_offset);
             OLED.print(menu->getItem(i).label);
+            if (menu->getItem(i).type == MenuItem::ItemType::SWITCH) {
+                String state = menu->getItem(i).get_switch_state() ? "[ON]" : "[OFF]";
+                int state_width = OLED.getStrWidth(state.c_str());
+                OLED.setCursor(x_offset + SCREEN_WIDTH - state_width - DEFAULT_TEXT_MARGIN, 
+                            i * DEFAULT_TEXT_HEIGHT + DEFAULT_TEXT_HEIGHT - DEFAULT_TEXT_MARGIN + y_offset);
+                OLED.print(state);
+            }
         }
         
         int selected_box_y = round(currentY) + y_offset;
@@ -196,6 +203,13 @@ private:
             OLED.setCursor(x_offset + INIT_CURSOR_X + DEFAULT_TEXT_MARGIN, 
                         i * DEFAULT_TEXT_HEIGHT + DEFAULT_TEXT_HEIGHT - DEFAULT_TEXT_MARGIN + y_offset);
             OLED.print(menu->getItem(i).label);
+            if (menu->getItem(i).type == MenuItem::ItemType::SWITCH) {
+                String state = menu->getItem(i).get_switch_state() ? "[ON]" : "[OFF]";
+                int state_width = OLED.getStrWidth(state.c_str());
+                OLED.setCursor(x_offset + SCREEN_WIDTH - state_width - DEFAULT_TEXT_MARGIN, 
+                            i * DEFAULT_TEXT_HEIGHT + DEFAULT_TEXT_HEIGHT - DEFAULT_TEXT_MARGIN + y_offset);
+                OLED.print(state);
+            }
         }
 
         OLED.setMaxClipWindow();
@@ -405,6 +419,13 @@ private:
                 OLED.setCursor(INIT_CURSOR_X + DEFAULT_TEXT_MARGIN, 
                             i * DEFAULT_TEXT_HEIGHT + DEFAULT_TEXT_HEIGHT - DEFAULT_TEXT_MARGIN + scrollScreen);
                 OLED.print(menu->getItem(i).label);
+                if (menu->getItem(i).type == MenuItem::ItemType::SWITCH) {
+                    String state = menu->getItem(i).get_switch_state() ? "[ON]" : "[OFF]";
+                    int state_width = OLED.getStrWidth(state.c_str());
+                    OLED.setCursor(SCREEN_WIDTH - state_width - DEFAULT_TEXT_MARGIN, 
+                                i * DEFAULT_TEXT_HEIGHT + DEFAULT_TEXT_HEIGHT - DEFAULT_TEXT_MARGIN + scrollScreen);
+                    OLED.print(state);
+                }
             }
 
             OLED.setMaxClipWindow();
