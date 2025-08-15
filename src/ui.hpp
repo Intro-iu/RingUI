@@ -16,7 +16,7 @@
 template <typename Driver>
 /**
  * @class RingController
- * @brief Manages the entire UI, including menus and pages.
+ * @brief Manages the entire UI, including menus, pages, and animations.
  */
 class RingController {
 public:
@@ -34,18 +34,21 @@ public:
         OLED.begin();
         OLED.enableUTF8Print();
         OLED.setFont(DEFAULT_TEXT_FONT);
-        OLED.setFontMode(1); // Transparent font mode
+        OLED.setFontMode(1);
     }
     
     /**
-     * @brief The main entry point and loop for the UI.
-     * @param startMenu The root menu to display.
+     * @brief Updates PID controller gains from the global config.
      */
     void update_pid_gains() {
         anim_pid.set_gains(g_config.anim_pid_kp, g_config.anim_pid_ki, g_config.anim_pid_kd);
         scroll_pid.set_gains(g_config.scroll_pid_kp, g_config.scroll_pid_ki, g_config.scroll_pid_kd);
     }
 
+    /**
+     * @brief The main entry point and loop for the UI.
+     * @param startMenu The root menu to display.
+     */
     void handle(Menu* startMenu) {
         if (!startMenu) return;
 
@@ -54,29 +57,32 @@ public:
 
         while (true) {
             Menu* currentMenu = menuStack.back();
+            pending_page = nullptr; // Reset pending page before showing a menu
             int selectedIndex = showMenu(currentMenu);
 
             if (selectedIndex >= 0) { // An item was selected
                 MenuItem& selectedItem = currentMenu->getItem(selectedIndex);
-                if (selectedItem.type == MenuItem::ItemType::DIRECTORY && selectedItem.subMenu) {
-                    // Animate to the submenu
+
+                if (pending_page) {
+                    // If showMenu created a page, handle its lifecycle.
+                    handlePage(pending_page, currentMenu, selectedItem);
+                    delete pending_page;
+                    pending_page = nullptr;
+                    if (selectedItem.on_close_callback) {
+                        selectedItem.on_close_callback();
+                    }
+                } else if (selectedItem.type == MenuItem::ItemType::DIRECTORY && selectedItem.subMenu) {
+                    // If a directory was selected, transition to it.
                     selectedItem.subMenu->selected = 0;
                     animateTransition(currentMenu, selectedItem.subMenu, ANIM_FORWARD);
                     menuStack.push_back(selectedItem.subMenu);
-                } else if (selectedItem.type == MenuItem::ItemType::OPTION && selectedItem.action) {
-                    // Create the page and handle its lifecycle
-                    Page* page = selectedItem.action();
-                    if (page) {
-                        handlePage(page, currentMenu, selectedItem);
-                        delete page; // Clean up the page object after it's done
-                    }
-                } else if (selectedItem.type == MenuItem::ItemType::SWITCH) {
-                    selectedItem.switch_action();
                 }
-            } else { // Cancelled from a menu
+                // SWITCH items and OPTION items that don't create a page are fully handled
+                // inside showMenu() to prevent UI jitter, so no action is needed here.
+
+            } else { // A menu was cancelled
                 if (menuStack.size() > 1) {
                     Menu* parentMenu = menuStack[menuStack.size() - 2];
-                    // Animate back to the parent menu
                     animateTransition(currentMenu, parentMenu, ANIM_BACKWARD);
                     menuStack.pop_back();
                 }
@@ -87,6 +93,8 @@ public:
 private:
     PIDController anim_pid;
     PIDController scroll_pid;
+    // Used to pass a newly created Page object from showMenu to handle.
+    Page* pending_page = nullptr;
 
     enum anim_direction {
         ANIM_FORWARD,
@@ -94,7 +102,7 @@ private:
     };
 
     /**
-     * @brief Manages the lifecycle of a page, including animations and interaction.
+     * @brief Manages the lifecycle of a page, including entry/exit animations and interaction.
      * @param page A pointer to the page to handle.
      * @param under_menu The menu that is displayed underneath the page during animations.
      */
@@ -122,18 +130,15 @@ private:
         // --- Page Main Loop ---
         while (true) {
             if (page->handleInput()) {
-                break; // Page is finished, exit loop
+                break;
             }
 
             OLED.clearBuffer();
             OLED.setDrawColor(1);
-            page->draw(0); // Draw page content normally
+            page->draw(0);
             OLED.sendBuffer();
             delay(ANIMATION_DELAY);
         }
-
-        // Update PID gains after page is done, in case they were changed.
-        update_pid_gains();
 
         // --- Page Exit Animation ---
         current_y = 0;
@@ -328,6 +333,11 @@ private:
         }
     }
 
+    /**
+     * @brief Displays a menu, handles its internal animation and input, and returns the selected index.
+     * @param menu The menu to show.
+     * @return The selected item's index, or -1 if cancelled.
+     */
     int showMenu(Menu* menu) {
         unsigned long previousMillis_Input = 0;
         
@@ -360,10 +370,39 @@ private:
             }
 
             if (g_encoder.isPressed()) {
+                MenuItem& item = menu->getItem(menu->selected);
+
+                // For items that don't navigate away, handle them here and continue the loop
+                // to prevent exiting and re-entering the menu, which causes a UI jitter.
+                if (item.type == MenuItem::ItemType::SWITCH) {
+                    if (item.switch_action) {
+                        item.switch_action();
+                    }
+                    continue;
+                }
+
+                if (item.type == MenuItem::ItemType::OPTION) {
+                    if (item.action) {
+                        Page* page = item.action();
+                        if (page) {
+                            // If a page is created, set it as pending and return to the handler.
+                            pending_page = page;
+                            return menu->selected;
+                        } else {
+                            // No page was created, so stay in the menu loop.
+                            continue;
+                        }
+                    } else {
+                        // No action defined, stay in the menu loop.
+                        continue;
+                    }
+                }
+                
+                // For DIRECTORY items, we need to exit to the main handler to change the menu.
                 return menu->selected;
             }
 
-            if (is_button_pressed(PIN_CANCEL)) { // Assuming PIN_CANCEL is still valid
+            if (is_button_pressed(PIN_CANCEL)) {
                 return -1;
             }
 
@@ -416,7 +455,7 @@ private:
                             INIT_CURSOR_X + round(currentWidth) + 2 * DEFAULT_TEXT_MARGIN, selected_box_y + DEFAULT_TEXT_HEIGHT);
 
             for (int i = 0; i < menu->size(); i++) {
-                OLED.setCursor(INIT_CURSOR_X + DEFAULT_TEXT_MARGIN, 
+                OLED.setCursor(INIT_CURSOR_X + DEFAULT_Text_MARGIN, 
                             i * DEFAULT_TEXT_HEIGHT + DEFAULT_TEXT_HEIGHT - DEFAULT_TEXT_MARGIN + scrollScreen);
                 OLED.print(menu->getItem(i).label);
                 if (menu->getItem(i).type == MenuItem::ItemType::SWITCH) {

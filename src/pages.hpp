@@ -1,6 +1,6 @@
 /**
  * @file pages.hpp
- * @brief Declares the page classes used in the application.
+ * @brief Declares the specific Page classes used in the application.
  */
 #pragma once
 
@@ -9,12 +9,12 @@
 #include "pid.hpp"
 #include <U8g2lib.h>
 
-// Forward-declare the OLED driver to avoid including the full header.
+// Forward-declare the OLED driver to avoid including the full header in every file.
 extern U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C OLED;
 
 /**
  * @class InfoPage
- * @brief A simple page that displays two lines of static text and waits for a key press to exit.
+ * @brief A page that displays multi-line, scrollable text content.
  */
 class InfoPage : public Page {
 public:
@@ -31,16 +31,16 @@ private:
     unsigned long entry_time;
     int total_lines;
 
-    // Animation variables
-    int target_scroll_offset; // Target line
-    double current_scroll_y;  // Current scroll position in pixels
+    // Scrolling animation variables
+    int target_scroll_offset; // Target line index for scrolling
+    double current_scroll_y;  // Current scroll position in pixels for smooth animation
     double velocity_y;
     PIDController scroll_pid;
 };
 
 /**
  * @class EditFloatPage
- * @brief A page for editing a float value, with an optional progress bar.
+ * @brief A page for editing a floating-point value with an optional progress bar.
  */
 class EditFloatPage : public Page {
 public:
@@ -54,16 +54,16 @@ protected:
 
 private:
     const char* title;
-    float* value_ptr;      // Pointer to the original value to modify.
-    float current_value;   // The value being edited.
+    float* value_ptr;      ///< Pointer to the original value to be modified.
+    float current_value;   ///< The temporary value being edited on the page.
     float step, min, max;
-    bool show_progress;    // True if a min and max range is provided.
+    bool show_progress;    ///< True if a min and max range is provided, enabling the progress bar.
     ProgressBar progress_bar;
 };
 
 /**
  * @class RebootPage
- * @brief A page that displays a "Rebooting..." message and then restarts the device.
+ * @brief A page that displays a "Rebooting..." message and then restarts the device after a delay.
  */
 class RebootPage : public Page {
 public:
@@ -74,5 +74,6 @@ protected:
     bool onCancel() override;
 
 private:
-    unsigned long entry_time; // Time of page entry to control reboot delay.
+    /// Time of page entry, used to control the reboot delay.
+    unsigned long entry_time;
 };

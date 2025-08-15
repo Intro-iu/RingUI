@@ -1,12 +1,11 @@
-#pragma once
-
 #include "element.hpp"
 #include "ui.hpp"
 #include "pages.hpp"
 #include "config.hpp"
 #include <functional>
 
-// Extern declarations for all menu objects defined in menu.cpp
+// Extern declarations for all menu objects defined in menu.cpp.
+// This allows them to be accessed from any file that includes this header.
 extern Menu mainMenu;
 extern Menu settingsMenu;
 extern Menu displayMenu;
@@ -16,9 +15,10 @@ extern Menu scrollPidMenu;
 extern Menu animPidMenu;
 
 /**
- * @brief Builds the entire menu structure of the application. 
+ * @brief Builds and links all menus and menu items for the application.
  * 
- * This is a template function to be independent of the display driver.
+ * This function is templated on the Driver type to remain independent of the
+ * specific display driver being used, as it needs a reference to the RingController.
  * The implementation is in this header file as required by C++ templates.
  */
 template <typename Driver>
@@ -38,6 +38,8 @@ void build_menus(RingController<Driver>& controller) {
     pidMenu.addItem(MenuItem("Scroll", &scrollPidMenu));
     pidMenu.addItem(MenuItem("Animation", &animPidMenu));
 
+    // This callback is passed to the EditFloatPage items for PID settings.
+    // It's called when the page is closed to update the PID controllers with new values.
     auto callback = [&controller]() { controller.update_pid_gains(); };
 
     scrollPidMenu.addItem(MenuItem("Kp", []() { return new EditFloatPage("Scroll Kp", &g_config.scroll_pid_kp, 0.01f, 0.0f, 1.0f); }, callback));

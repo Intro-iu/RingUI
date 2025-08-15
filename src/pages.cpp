@@ -1,6 +1,6 @@
 /**
  * @file pages.cpp
- * @brief Implements the page classes used in the application.
+ * @brief Implements the specific Page classes used in the application.
  */
 #include "pages.hpp"
 #include "config.hpp"
@@ -19,7 +19,6 @@ InfoPage::InfoPage(String content)
       scroll_pid(g_config.scroll_pid_kp, g_config.scroll_pid_ki, g_config.scroll_pid_kd)
 {
     entry_time = millis();
-    // Calculate total_lines
     total_lines = 1;
     for (unsigned int i = 0; i < content.length(); i++) {
         if (content.charAt(i) == '\n') {
@@ -45,7 +44,7 @@ void InfoPage::constrainScroll() {
 }
 
 void InfoPage::draw(int y_offset) {
-    // --- PID Animation ---
+    // Animate the scroll position for a smooth effect.
     double target_y = target_scroll_offset * DEFAULT_TEXT_HEIGHT;
     if (abs(target_y - current_scroll_y) > 0.1 || abs(velocity_y) > 0.1) {
         velocity_y = scroll_pid.update(target_y, current_scroll_y);
@@ -54,7 +53,7 @@ void InfoPage::draw(int y_offset) {
         current_scroll_y = target_y;
     }
 
-    // --- Drawing ---
+    // Drawing
     OLED.setDrawColor(0);
     OLED.drawBox(0, y_offset, SCREEN_WIDTH, SCREEN_HEIGHT);
     OLED.setDrawColor(1);
@@ -75,10 +74,10 @@ void InfoPage::draw(int y_offset) {
             start_pos = newline_pos + 1;
         }
 
-        // Calculate y position for the line, considering the animated scroll
+        // Calculate y position for the line, considering the animated scroll.
         int line_y_pos = DEFAULT_TEXT_HEIGHT * (line_num + 1) - round(current_scroll_y);
         
-        // Culling: Only draw lines that are visible on screen
+        // Culling: Only draw lines that are actually visible on screen.
         if (line_y_pos > -DEFAULT_TEXT_HEIGHT && line_y_pos < SCREEN_HEIGHT + DEFAULT_TEXT_HEIGHT) {
             OLED.setCursor(0, line_y_pos + y_offset);
             OLED.print(line);
@@ -87,7 +86,7 @@ void InfoPage::draw(int y_offset) {
         line_num++;
     }
     
-    // --- Scrollbar ---
+    // Scrollbar
     int visible_lines = SCREEN_HEIGHT / DEFAULT_TEXT_HEIGHT;
     if (total_lines > visible_lines) {
         OLED.drawVLine(SCREEN_WIDTH - 2, y_offset, SCREEN_HEIGHT);
@@ -117,9 +116,7 @@ EditFloatPage::EditFloatPage(const char* title, float* value, float step, float 
       step(step), min(min), max(max),
       show_progress(min != max),
       progress_bar(0, DEFAULT_TEXT_HEIGHT * 2 + 2, SCREEN_WIDTH, DEFAULT_PROGRESS_HEIGHT) 
-{
-    // last_input_time is now handled by the base Page class
-}
+{}
 
 void EditFloatPage::onScrollUp() {
     current_value -= step;
@@ -136,16 +133,14 @@ void EditFloatPage::onScrollDown() {
 }
 
 bool EditFloatPage::onConfirm() {
-    *value_ptr = current_value; // Save the new value
-    return true; // Signal that the page is finished.
+    *value_ptr = current_value;
+    return true;
 }
 
 void EditFloatPage::draw(int y_offset) {
-    // Erase the area under the page by drawing a black box.
     OLED.setDrawColor(0);
     OLED.drawBox(0, y_offset, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    // Draw the text content in white.
     OLED.setDrawColor(1);
     OLED.setFont(u8g2_font_6x12_me);
     OLED.setCursor(0, DEFAULT_TEXT_HEIGHT + y_offset);
@@ -155,7 +150,6 @@ void EditFloatPage::draw(int y_offset) {
     OLED.print(current_value, 3);
 
     if (show_progress) {
-        // The progress bar is drawn with the current draw color (white).
         progress_bar.draw(current_value, min, max, y_offset);
     }
     
@@ -171,21 +165,19 @@ RebootPage::RebootPage()
 }
 
 bool RebootPage::onCancel() {
-    // Allow canceling only within the time limit
+    // Allow canceling the reboot only within the time limit.
     return (millis() - entry_time < 3000);
 }
 
 void RebootPage::draw(int y_offset) {
-    // If timeout is reached, reboot. This is checked on every frame.
+    // If the timeout is reached, reboot. This is checked on every frame draw.
     if (millis() - entry_time >= 3000) {
         ESP.restart();
     }
 
-    // Erase the area under the page by drawing a black box.
     OLED.setDrawColor(0);
     OLED.drawBox(0, y_offset, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    // Draw the text content in white.
     OLED.setDrawColor(1);
     OLED.setFont(u8g2_font_6x12_me);
     OLED.setCursor(0, DEFAULT_TEXT_HEIGHT + y_offset);

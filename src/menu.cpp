@@ -1,10 +1,10 @@
 /**
  * @file menu.cpp
- * @brief Defines the menu objects for the application.
+ * @brief Defines and allocates memory for the global menu objects.
  */
 #include "menu.hpp"
 
-// Menu Definitions
+// Global menu object definitions. These are linked together in build_menus().
 Menu mainMenu("Main Menu");
 Menu settingsMenu("Settings");
 Menu displayMenu("Display");

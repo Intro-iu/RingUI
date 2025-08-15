@@ -1,3 +1,7 @@
+/**
+ * @file element.cpp
+ * @brief Implements the Menu and MenuItem classes.
+ */
 #include "element.hpp"
 
 MenuItem::MenuItem(String label, std::function<Page*()> action, std::function<void()> on_close_callback)
@@ -11,6 +15,10 @@ MenuItem::MenuItem(String label, std::function<void()> switch_action, std::funct
 
 Menu::Menu(String title) : title(title), parent(nullptr), selected(0) {}
 
+/**
+ * @brief Adds a new item to the menu's list.
+ * @param item The MenuItem object to add.
+ */
 void Menu::addItem(const MenuItem& item) {
     items.push_back(item);
     if (item.type == MenuItem::ItemType::DIRECTORY && item.subMenu != nullptr) {
@@ -18,6 +26,10 @@ void Menu::addItem(const MenuItem& item) {
     }
 }
 
+/**
+ * @brief Sets the parent menu for this menu, enabling backward navigation.
+ * @param parent A pointer to the parent Menu.
+ */
 void Menu::setParent(Menu* parent) {
     this->parent = parent;
 }

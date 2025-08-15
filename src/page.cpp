@@ -5,17 +5,16 @@
 #include "page.hpp"
 #include "input.hpp"
 #include "config.hpp"
-#include <Arduino.h> // For millis()
 
-Page::Page() : last_input_time(0) {}
+// The Page constructor is defaulted in the header and last_input_time was removed.
 
 bool Page::handleInput() {
-    // Check for cancel button first
+    // The cancel button has the highest priority.
     if (is_button_pressed(PIN_CANCEL)) {
         return onCancel();
     }
 
-    // Handle encoder rotation
+    // Handle encoder rotation for scrolling.
     RotaryDirection dir;
     while ((dir = g_encoder.getDirection()) != RotaryDirection::NOROTATION) {
         if (dir == RotaryDirection::CLOCKWISE) {
@@ -25,10 +24,11 @@ bool Page::handleInput() {
         }
     }
 
-    // Handle encoder button press for confirm
+    // Handle encoder button press for confirmation.
     if (g_encoder.isPressed()) {
         return onConfirm();
     }
 
-    return false; // By default, the page does not exit.
+    // By default, the page does not exit and continues to be displayed.
+    return false;
 }
