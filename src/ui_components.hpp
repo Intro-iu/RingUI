@@ -1,9 +1,12 @@
+/**
+ * @file ui_components.hpp
+ * @brief Contains various UI component classes like ProgressBar.
+ */
 #pragma once
 
-#include <U8g2lib.h>
+#include "config.hpp"
 
-// Forward-declare the OLED driver to avoid including the full header.
-extern U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C OLED;
+extern DisplayDriver OLED;
 
 /**
  * @class ProgressBar

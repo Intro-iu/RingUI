@@ -8,7 +8,7 @@
 #include <functional>
 #include <vector>
 #include <U8g2lib.h>
-#include "element.hpp"
+#include "menu.hpp"
 #include "config.hpp"
 #include "pid.hpp"
 #include "input.hpp"
@@ -455,7 +455,7 @@ private:
                             INIT_CURSOR_X + round(currentWidth) + 2 * DEFAULT_TEXT_MARGIN, selected_box_y + DEFAULT_TEXT_HEIGHT);
 
             for (int i = 0; i < menu->size(); i++) {
-                OLED.setCursor(INIT_CURSOR_X + DEFAULT_Text_MARGIN, 
+                OLED.setCursor(INIT_CURSOR_X + DEFAULT_TEXT_MARGIN, 
                             i * DEFAULT_TEXT_HEIGHT + DEFAULT_TEXT_HEIGHT - DEFAULT_TEXT_MARGIN + scrollScreen);
                 OLED.print(menu->getItem(i).label);
                 if (menu->getItem(i).type == MenuItem::ItemType::SWITCH) {

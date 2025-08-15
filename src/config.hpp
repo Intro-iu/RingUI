@@ -8,6 +8,7 @@
 //==============================================================================
 // Display Properties
 //==============================================================================
+using DisplayDriver = U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C;
 static constexpr int SCREEN_WIDTH = 128;
 static constexpr int SCREEN_HEIGHT = 32;
 

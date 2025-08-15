@@ -1,8 +1,8 @@
 /**
- * @file progress.cpp
- * @brief Implements the ProgressBar class.
+ * @file ui_components.cpp
+ * @brief Implements UI component classes.
  */
-#include "progress.hpp"
+#include "ui_components.hpp"
 #include "config.hpp"
 #include <Arduino.h> // For constrain()
 
