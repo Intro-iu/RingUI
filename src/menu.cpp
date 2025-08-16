@@ -1,5 +1,5 @@
 /**
- * @file element.cpp
+ * @file menu.cpp
  * @brief Implements the Menu and MenuItem classes.
  */
 #include "menu.hpp"

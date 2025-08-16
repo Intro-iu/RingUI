@@ -1,6 +1,7 @@
 /**
  * @file main.cpp
  * @brief Main entry point for the RingUI application.
+ * @defgroup Main
  */
 #include <Arduino.h>
 #include "config.hpp"
@@ -10,12 +11,19 @@
 #include "pages.hpp"
 #include <functional>
 
-// Global U8g2 display driver object.
+/// @brief Global U8g2 display driver object.
+/// @ingroup Main
 DisplayDriver OLED(U8G2_R0, U8X8_PIN_NONE, SYS_SCL, SYS_SDA);
-// Global UI controller, which manages all menus and pages.
+/// @brief Global UI controller, which manages all menus and pages.
+/// @ingroup Main
 RingController<DisplayDriver> controller(OLED);
 
-// Menu object definitions
+/**
+ * @defgroup Menus Menu Instances
+ * @ingroup Main
+ * @brief Global instances of the Menu class, forming the application's menu structure.
+ * @{
+ */
 Menu mainMenu("Main Menu");
 Menu settingsMenu("Settings");
 Menu displayMenu("Display");
@@ -23,9 +31,11 @@ Menu systemMenu("System");
 Menu pidMenu("PID Settings");
 Menu scrollPidMenu("Scroll PID");
 Menu animPidMenu("Animation PID");
+/** @} */
 
 /**
  * @brief The standard Arduino setup function. Runs once on startup.
+ * @ingroup Main
  */
 void setup() {
     // Initialize hardware and software services.
@@ -72,8 +82,10 @@ void setup() {
 
 /**
  * @brief The standard Arduino loop function.
+ * @ingroup Main
  */
 void loop() {
     // The controller.handle() function in setup() contains the main application
     // loop, so this function is intentionally left empty.
 }
+

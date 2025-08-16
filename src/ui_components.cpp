@@ -4,7 +4,7 @@
  */
 #include "ui_components.hpp"
 #include "config.hpp"
-#include <Arduino.h> // For constrain()
+#include <Arduino.h>
 
 ProgressBar::ProgressBar(int x, int y, int width, int height)
     : x(x), y(y), width(width), height(height) {}

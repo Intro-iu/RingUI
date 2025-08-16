@@ -31,8 +31,9 @@ void RotaryEncoder::begin() {
 
 /**
  * @brief This ISR reads the encoder state and determines the direction of rotation.
- * It uses a state machine lookup table implemented with the 'sum' variable to
- * decode the quadrature signal.
+ * @details It uses a state machine lookup table implemented with the 'sum' variable to
+ * decode the quadrature signal. This method is designed to be fast and efficient
+ * for execution within an interrupt context.
  */
 void IRAM_ATTR RotaryEncoder::readEncoder() {
     int msb = digitalRead(instance->_pinA);
@@ -104,7 +105,10 @@ bool RotaryEncoder::isPressed() {
 
 /**
  * @brief A generic, debounced button press checker.
- * This is used for the CANCEL button, which uses INPUT_PULLDOWN.
+ * @details This is used for the CANCEL button, which uses INPUT_PULLDOWN. It triggers
+ * on the rising edge and includes a simple debounce timer.
+ * @param pin The GPIO pin to check.
+ * @return true if a debounced press event was detected, false otherwise.
  */
 bool is_button_pressed(int pin) {
     static unsigned long last_press_time = 0;

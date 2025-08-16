@@ -1,6 +1,8 @@
 /**
  * @file ui.hpp
  * @brief Defines the main UI controller, RingController.
+ * @defgroup UI User Interface
+ * @{
  */
 #pragma once
 
@@ -473,3 +475,4 @@ private:
         }
     }
 };
+/** @} */

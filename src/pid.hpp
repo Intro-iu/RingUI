@@ -1,8 +1,15 @@
+/**
+ * @file pid.hpp
+ * @brief Defines the PIDController class.
+ * @defgroup PID
+ * @{
+ */
 #pragma once
 
 /**
  * @class PIDController
  * @brief A simple Proportional-Integral-Derivative (PID) controller.
+ * @ingroup PID
  * 
  * Used for creating smooth, organic-looking animations for UI elements
  * by calculating an "effort" value to move a current value towards a target.
@@ -20,6 +27,9 @@ public:
 
     /**
      * @brief Sets new gain values for the controller.
+     * @param kp New proportional gain.
+     * @param ki New integral gain.
+     * @param kd New derivative gain.
      */
     void set_gains(float kp, float ki, float kd);
 
@@ -37,8 +47,9 @@ public:
     void reset();
 
 private:
-    float kp, ki, kd;
-    float integral;
-    float last_error;
-    float integral_limit;
+    float kp, ki, kd; ///< PID gain values.
+    float integral; ///< The accumulated integral term.
+    float last_error; ///< The error from the previous update cycle.
+    float integral_limit; ///< The limit for the integral term to prevent windup.
 };
+/** @} */
